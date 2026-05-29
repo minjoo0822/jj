@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>교육자원 효율 진단 플랫폼</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- GitHub Pages에서는 Flask의 url_for를 쓸 수 없으므로 직접 경로로 연결 -->
+    <link rel="stylesheet" href="./static/style.css">
+
+    <!-- main.py 대신 브라우저에서 실행될 JavaScript 파일 -->
+    <script src="./static/script.js" defer></script>
 </head>
 <body>
 
@@ -20,84 +25,81 @@
     <section class="card">
         <h2>1. 기준 지역 선택 및 데이터 입력</h2>
 
-        <form method="POST">
+        <!-- GitHub Pages에서는 POST로 Flask 서버에 보내지 않으므로 form 대신 JS가 처리 -->
+        <form id="diagnosisForm">
             <div class="top-form">
                 <div>
-                    <label>기준 지역 선택</label>
-                    <select name="region_id">
-                        {% for region in region_options %}
-                            <option value="{{ region }}" {% if region == selected_id %}selected{% endif %}>
-                                {{ region }}
-                            </option>
-                        {% endfor %}
+                    <label for="regionSelect">기준 지역 선택</label>
+                    <select id="regionSelect" name="region_id">
+                        <option value="">기준 지역 선택</option>
                     </select>
                 </div>
 
                 <div>
-                    <label>개선 시나리오 적용 비율(%)</label>
-                    <input type="number" name="rate" value="{{ result.rate }}" min="1" max="50" step="1">
+                    <label for="rate">개선 시나리오 적용 비율(%)</label>
+                    <input type="number" id="rate" name="rate" value="10" min="1" max="50" step="1">
                 </div>
             </div>
 
             <div class="button-row">
-                <button type="submit" name="action" value="load" class="secondary-btn">
+                <button type="button" id="loadBtn" class="secondary-btn">
                     선택 지역 값 불러오기
                 </button>
             </div>
 
             <div class="form-grid">
                 <div>
-                    <label>학생 수</label>
-                    <input type="number" name="students" value="{{ form_values.students }}" step="any">
+                    <label for="students">학생 수</label>
+                    <input type="number" id="students" name="students" step="any">
                 </div>
 
                 <div>
-                    <label>학급 수</label>
-                    <input type="number" name="classes" value="{{ form_values.classes }}" step="any">
+                    <label for="classes">학급 수</label>
+                    <input type="number" id="classes" name="classes" step="any">
                 </div>
 
                 <div>
-                    <label>교원 수</label>
-                    <input type="number" name="teachers" value="{{ form_values.teachers }}" step="any">
+                    <label for="teachers">교원 수</label>
+                    <input type="number" id="teachers" name="teachers" step="any">
                 </div>
 
                 <div>
-                    <label>학교용지 면적</label>
-                    <input type="number" name="land_area" value="{{ form_values.land_area }}" step="any">
+                    <label for="land_area">학교용지 면적</label>
+                    <input type="number" id="land_area" name="land_area" step="any">
                 </div>
 
                 <div>
-                    <label>교지 면적</label>
-                    <input type="number" name="site_area" value="{{ form_values.site_area }}" step="any">
+                    <label for="site_area">교지 면적</label>
+                    <input type="number" id="site_area" name="site_area" step="any">
                 </div>
 
                 <div>
-                    <label>교사 면적</label>
-                    <input type="number" name="building_area" value="{{ form_values.building_area }}" step="any">
+                    <label for="building_area">교사 면적</label>
+                    <input type="number" id="building_area" name="building_area" step="any">
                 </div>
 
                 <div>
-                    <label>냉난방 면적</label>
-                    <input type="number" name="cooling_area" value="{{ form_values.cooling_area }}" step="any">
+                    <label for="cooling_area">냉난방 면적</label>
+                    <input type="number" id="cooling_area" name="cooling_area" step="any">
                 </div>
 
                 <div>
-                    <label>전기 총사용량(kWh)</label>
-                    <input type="number" name="electricity" value="{{ form_values.electricity }}" step="any">
+                    <label for="electricity">전기 총사용량(kWh)</label>
+                    <input type="number" id="electricity" name="electricity" step="any">
                 </div>
 
                 <div>
-                    <label>상수도 사용량(톤)</label>
-                    <input type="number" name="water" value="{{ form_values.water }}" step="any">
+                    <label for="water">상수도 사용량(톤)</label>
+                    <input type="number" id="water" name="water" step="any">
                 </div>
 
                 <div>
-                    <label>가스 사용량(m³)</label>
-                    <input type="number" name="gas" value="{{ form_values.gas }}" step="any">
+                    <label for="gas">가스 사용량(m³)</label>
+                    <input type="number" id="gas" name="gas" step="any">
                 </div>
             </div>
 
-            <button type="submit" name="action" value="diagnose" class="main-btn">
+            <button type="button" id="diagnoseBtn" class="main-btn">
                 입력값으로 진단하기
             </button>
         </form>
@@ -106,17 +108,17 @@
     <section class="result-grid">
         <div class="score-card">
             <p>교육자원 효율 점수</p>
-            <h2>{{ result.scores["교육자원_효율점수"] }}점</h2>
+            <h2><span id="educationScore">-</span>점</h2>
         </div>
 
         <div class="score-card danger">
             <p>종합 비효율 점수</p>
-            <h2>{{ result.scores["종합_비효율점수"] }}점</h2>
+            <h2><span id="inefficiencyScore">-</span>점</h2>
         </div>
 
         <div class="score-card">
             <p>비효율 위험등급</p>
-            <h2>{{ result.risk }}</h2>
+            <h2 id="riskGrade">-</h2>
         </div>
     </section>
 
@@ -125,28 +127,28 @@
 
         <div class="type-box">
             주요 비효율 유형:
-            <strong>{{ result.main_type }}</strong>
+            <strong id="mainType">-</strong>
         </div>
 
         <div class="mini-grid">
             <div>
                 <p>에너지 비효율 점수</p>
-                <strong>{{ result.scores["에너지_비효율점수"] }}점</strong>
+                <strong><span id="energyScore">-</span>점</strong>
             </div>
 
             <div>
                 <p>공간 과잉 점수</p>
-                <strong>{{ result.scores["공간_과잉점수"] }}점</strong>
+                <strong><span id="spaceScore">-</span>점</strong>
             </div>
 
             <div>
                 <p>운영 구조 점수</p>
-                <strong>{{ result.scores["운영_구조점수"] }}점</strong>
+                <strong><span id="operationScore">-</span>점</strong>
             </div>
         </div>
 
-        <p class="recommend">
-            {{ result.recommendation }}
+        <p class="recommend" id="recommendation">
+            기준 지역을 선택하거나 값을 입력한 뒤 진단을 실행하세요.
         </p>
     </section>
 
@@ -154,17 +156,17 @@
         <h2>3. 주요 파생변수</h2>
 
         <table>
-            <tr>
-                <th>지표</th>
-                <th>값</th>
-            </tr>
-
-            {% for item in result.derived_table %}
-            <tr>
-                <td>{{ item.label }}</td>
-                <td>{{ item.value }}</td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>지표</th>
+                    <th>값</th>
+                </tr>
+            </thead>
+            <tbody id="derivedTableBody">
+                <tr>
+                    <td colspan="2">진단 결과가 여기에 표시됩니다.</td>
+                </tr>
+            </tbody>
         </table>
     </section>
 
@@ -175,27 +177,22 @@
         </p>
 
         <table>
-            <tr>
-                <th>지역ID</th>
-                <th>교육청</th>
-                <th>구군</th>
-                <th>효율 점수</th>
-                <th>비효율 점수</th>
-                <th>위험등급</th>
-                <th>주요 유형</th>
-            </tr>
-
-            {% for row in result.similar_regions %}
-            <tr>
-                <td>{{ row["지역ID"] }}</td>
-                <td>{{ row["교육청"] }}</td>
-                <td>{{ row["구군"] }}</td>
-                <td>{{ "%.2f"|format(row["교육자원_효율점수"]) }}</td>
-                <td>{{ "%.2f"|format(row["종합_비효율점수"]) }}</td>
-                <td>{{ row["비효율_위험등급"] }}</td>
-                <td>{{ row["주요_비효율유형"] }}</td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>지역ID</th>
+                    <th>교육청</th>
+                    <th>구군</th>
+                    <th>효율 점수</th>
+                    <th>비효율 점수</th>
+                    <th>위험등급</th>
+                    <th>주요 유형</th>
+                </tr>
+            </thead>
+            <tbody id="similarRegionsBody">
+                <tr>
+                    <td colspan="7">유사 지역 결과가 여기에 표시됩니다.</td>
+                </tr>
+            </tbody>
         </table>
     </section>
 
@@ -206,38 +203,25 @@
         </p>
 
         <table>
-            <tr>
-                <th>시나리오</th>
-                <th>개선 후 효율 점수</th>
-                <th>점수 개선폭</th>
-            </tr>
-
-            {% for scenario in result.scenario_results %}
-            <tr>
-                <td>{{ scenario.name }}</td>
-                <td>{{ scenario.new_score }}점</td>
-                <td>
-                    {% if scenario.improvement >= 0 %}
-                        +{{ scenario.improvement }}점
-                    {% else %}
-                        {{ scenario.improvement }}점
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>시나리오</th>
+                    <th>개선 후 효율 점수</th>
+                    <th>점수 개선폭</th>
+                </tr>
+            </thead>
+            <tbody id="scenarioResultsBody">
+                <tr>
+                    <td colspan="3">시나리오 결과가 여기에 표시됩니다.</td>
+                </tr>
+            </tbody>
         </table>
 
         <div class="best-box">
             최우선 개선안은
-            <strong>{{ result.best_scenario.name }}</strong>입니다.
+            <strong id="bestScenarioName">-</strong>입니다.
             예상 개선폭은
-            <strong>
-                {% if result.best_scenario.improvement >= 0 %}
-                    +{{ result.best_scenario.improvement }}점
-                {% else %}
-                    {{ result.best_scenario.improvement }}점
-                {% endif %}
-            </strong>
+            <strong id="bestScenarioImprovement">-</strong>
             입니다.
         </div>
     </section>
